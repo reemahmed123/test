@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday with Fireworks and Balloons</title>
+    <style>
+        /* Basic styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+      body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Allow content to flow down */
+    min-height: 100vh; /* Minimum height */
+    background: linear-gradient(rgb(226, 38, 129), rgb(102, 196, 222), rgb(115, 109, 225));
+    color: white;
+    position: relative;
+    flex-direction: column; /* Stack content vertically */
+    overflow-x: hidden; /* Only hide horizontal scroll if needed */
+    padding: 50px 0; /* Add some spacing for mobile */
+}
+
+
+#birthday-text { 
+    font-size: 4em; 
+    color: white; 
+    text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.6); 
+    position: absolute; 
+    z-index: 10; 
+    text-align: center; 
+    max-width: 90%; /* Limit width to allow wrapping */ 
+    top: 50%; /* Center vertically */ 
+    left: 50%; /* Center horizontally */ 
+    transform: translate(-50%, -50%); /* Center alignment */ 
+    white-space: normal; /* Allow text to wrap onto multiple lines */ 
+    line-height: 1.2em; /* Spacing between lines */ }
+        /* Fireworks container */
+        #advanced-fireworks {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: 0;
+        }
+
+        /* Balloons container */
+        #balloons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .balloon {
+            position: absolute;
+            bottom: -150px;
+            width: 50px;
+            height: 70px;
+            background-color: red;
+            border-radius: 50%;
+            box-shadow: inset -10px -10px rgba(0, 0, 0, 0.3);
+            animation: float 10s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-1000px) rotate(10deg);
+            }
+
+            100% {
+                transform: translateY(-2000px) rotate(0deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="birthday-text"></div>
+    <canvas id="advanced-fireworks"></canvas>
+    <div id="balloons"></div>
+
+    <script>
+        // Typing effect
+        const message = "Happy Birthday ya Ahmed , I wish you a happy year full of fantastic achievements :)!❤️❤️❤️";
+        let i = 0;
+        const speed = 200;
+
+        function typeWriter() {
+            if (i < message.length) {
+                document.getElementById("birthday-text").textContent += message.charAt(i);
+                i++;
+                setTimeout(typeWriter, speed);
+            }
+        }
+
+        // Start typing when the page loads
+        window.onload = function () {
+            document.getElementById("birthday-text").textContent = "";
+            typeWriter();
+            startAdvancedFireworks();
+            startBalloons();
+        };
+
+        // Advanced fireworks animation (HTML5 canvas)
+        function startAdvancedFireworks() {
+            const canvas = document.getElementById("advanced-fireworks");
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let fireworks = [];
+            const numFireworks = 6;
+            const particlesPerExplosion = 150;
+            const gravity = 0.03;
+
+            class Firework {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height;
+                    this.targetY = Math.random() * canvas.height / 2;
+                    this.speedY = -Math.random() * 7 - 5;
+                    this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    this.exploded = false;
+                    this.particles = [];
+                }
+
+                update() {
+                    if (!this.exploded) {
+                        this.y += this.speedY;
+                        this.speedY += gravity;
+
+                        if (this.y <= this.targetY) {
+                            this.explode();
+                        }
+                    }
+
+                    this.particles.forEach((particle, index) => {
+                        particle.update();
+                        particle.draw();
+
+                        if (particle.life <= 0) {
+                            this.particles.splice(index, 1);
+                        }
+                    });
+                }
+
+                explode() {
+                    this.exploded = true;
+                    for (let i = 0; i < particlesPerExplosion; i++) {
+                        this.particles.push(new Particle(this.x, this.y, this.color));
+                    }
+                }
+
+                draw() {
+                    if (!this.exploded) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                }
+            }
+
+            class Particle {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.speedX = (Math.random() - 0.5) * 6;
+                    this.speedY = (Math.random() - 0.5) * 6;
+                    this.life = Math.random() * 30 + 20;
+                    this.color = color;
+                    this.opacity = 1;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.speedY += gravity;
+                    this.opacity -= 0.02;
+                    this.life--;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${this.hue}, ${this.saturation}, ${this.lightness}, ${this.opacity})`;
+                    ctx.fill();
+                }
+            }
+
+            function createFireworks() {
+                for (let i = 0; i < numFireworks; i++) {
+                    fireworks.push(new Firework());
+                }
+            }
+
+            function animateFireworks() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                fireworks.forEach((firework, index) => {
+                    firework.update();
+                    firework.draw();
+
+                    if (firework.exploded && firework.particles.length === 0) {
+                        fireworks.splice(index, 1);
+                        fireworks.push(new Firework());
+                    }
+                });
+
+                requestAnimationFrame(animateFireworks);
+            }
+
+            createFireworks();
+            animateFireworks();
+        }
+
+        // Function to generate floating balloons
+        function startBalloons() {
+            const balloonContainer = document.getElementById('balloons');
+            const colors = ['#FF3D3D', '#FFD700', '#3DA5FF', '#3DFF91', '#FF69B4'];
+
+            function createBalloon() {
+                const balloon = document.createElement('div');
+                balloon.classList.add('balloon');
+                balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                balloon.style.left = Math.random() * window.innerWidth + 'px';
+                balloonContainer.appendChild(balloon);
+
+                balloon.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                setTimeout(() => balloon.remove(), 10000); // Remove balloon after 10 seconds
+            }
+
+            setInterval(createBalloon, 1000); // Generate balloons every second
+        }
+    </script>
+
+</body>
+
+</html>
